@@ -7,7 +7,8 @@ router.get("/", (req, res) => {
 });
 
 router.post("/create", (req,res) => {
-    res.send({data:"página create"});
+    let {nome,email,password} = req.body;
+    return res.json(password);
 });
 
 router.get("/id/",(req,res) => {
