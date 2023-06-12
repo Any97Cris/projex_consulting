@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const userRoute = require("./routes/user");
 const immobileRoute = require("./routes/immobile");
 
+
 app.use(cors());
 
 app.use(express.json());
