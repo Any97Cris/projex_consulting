@@ -31,6 +31,26 @@ router.get("/", (req, res) => {
     res.json(DB.users);
 });
 
+router.get("/:id",[
+    param("id").isNumeric()
+], (req,res) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }else{
+        //parserInt = converte em número
+        var id = parseInt(req.params.id);
+
+        var banco_dados = DB.users.find(db => db.id == id);
+
+        if(banco_dados != undefined){
+            res.json(banco_dados).status(200);
+        }else{
+            res.json({message: "Invalid value"}).status(404)
+        }
+    }
+});
+
 router.post("/create",[
     body("id").isNumeric().custom(value => {
         if(value == DB.users["id"]){
@@ -61,7 +81,48 @@ router.post("/create",[
     }
 });
 
-router.get("/:id",[
+router.put("/update/:id", [
+    param("id").isNumeric()
+],(req,res) => {
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()});
+    }else{
+        
+        //parserInt = converte em número
+        var id = parseInt(req.params.id);
+    
+        var banco_dados = DB.users.find(db => db.id == id);
+    
+            if(banco_dados != undefined){
+                var {nome, email, password} = req.body;
+
+                if(nome != undefined){
+                    banco_dados.nome = nome;
+                }
+
+                if(email != undefined){
+                    banco_dados.email = email;
+                }
+
+                if(password != undefined){
+                    banco_dados.password = password;
+                }
+
+                res.json({message: "Successfully Edited Data"}).status(200);
+
+            }else{
+                res.json({message: "Not Found"}).status(404)
+            }
+        
+        return res.json({message: "Successfully Registered Data!"}).status(200);        
+        
+    }
+    
+});
+
+router.delete("/delete/:id",[
     param("id").isNumeric()
 ], (req,res) => {
     const errors = validationResult(req);
@@ -71,23 +132,15 @@ router.get("/:id",[
         //parserInt = converte em número
         var id = parseInt(req.params.id);
 
-        var banco_dados = DB.users.find(db => db.id == id);
+        var banco_dados = DB.users.findIndex(db => db.id == id);
 
-        if(banco_dados != undefined){
-            res.json(banco_dados).status(200);
+        if(banco_dados == -1){
+            res.json({message: "Not Found"}).sendStatus(404);
         }else{
-            res.json({message: "Invalid value"}).status(404)
+            DB.users.splice(banco_dados,1);
+            res.json({message: "Successfully Deleted Data!"}).sendStatus(200);
         }
     }
-});
-
-
-router.put("/update", (req,res) => {
-    res.send({data: "págia editar"})
-});
-
-router.delete("/delete/", (req,res) => {
-    res.send({data: "página deletar"});
 })
 
 
