@@ -27,8 +27,7 @@ var DB = {
 
 
 router.get("/", (req, res) => {
-    res.statusCode = 200;
-    res.json(DB.users);
+    res.json(DB.users).status(200);
 });
 
 router.get("/:id",[
