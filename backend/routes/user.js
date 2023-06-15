@@ -1,33 +1,21 @@
 const express = require("express");
+const connection = require("../connection_db");
+require("dotenv").config();
 const router = express.Router();
-const {body, validationResult, param} = require("express-validator");
-
-var DB = {
-    users: [
-      {
-        id: 1,
-        nome: "Crisciany Silva",
-        email: "criscianysilva@gmail.com",
-        password: "123456"
-      },
-      {
-        id: 2,
-        nome: "Samuelson Brito",
-        email: "samuelsonbrito@gmail.com",
-        password: "Sam123"
-      },{
-        id: 3,
-        nome: "Cristiane Silva",
-        email: "cristianesilva@gmail.com",
-        password: "cris123"
-      },
-    ]
-   }
-  
+const {body, validationResult, param} = require("express-validator");  
+const { query } = require("../connection_db");
 
 
 router.get("/", (req, res) => {
-    res.json(DB.users).status(200);
+    let query = 'select nome, email, password from users';
+
+    connection.query(query, (err, results) => {
+        if(!err){
+            return res.status(200).json({data: results});
+        }else{
+            return res.status(500).json({ err });
+        }
+    })
 });
 
 router.get("/:id",[
@@ -37,31 +25,22 @@ router.get("/:id",[
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     }else{
-        //parserInt = converte em número
-        var id = parseInt(req.params.id);
-
-        var banco_dados = DB.users.find(db => db.id == id);
-
-        if(banco_dados != undefined){
-            res.json(banco_dados).status(200);
-        }else{
-            res.json({message: "Invalid value"}).status(404)
-        }
+        var id = parseInt(req.params.id);        
+        let query = `select id, nome, email, password from users where id = ${id}`
+        console.log(query);
+        connection.query(query,[id],(err, results) => {            
+            if(!err){                
+                return res.status(200).json({data: results[0]});    
+            }else{
+                return res.status(500).json({ err });
+            }
+        });        
     }
 });
 
-router.post("/create",[
-    body("id").isNumeric().custom(value => {
-        if(value == DB.users["id"]){
-            return Promise.reject('ID already exists!');
-        }
-    }),
+router.post("/",[
     body("nome").isString(),
-    body("email").custom(value => {
-        if(value == DB.users["email"]){
-            return Promise.reject('E-mail already exists!');
-        }
-    }),
+    body("email").isEmail(),
     body("password").isLength({min: 6})
 ],(req,res) => {
     const errors = validationResult(req);
@@ -76,7 +55,9 @@ router.post("/create",[
             email,
             password
         });
+    
         return res.json({message: "Successfully Registered Data!"}).status(200);
+        
     }
 });
 
